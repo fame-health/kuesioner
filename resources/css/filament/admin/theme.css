@@ -1,0 +1,185 @@
+@import '../../../../vendor/filament/filament/resources/css/theme.css';
+
+@source '../../../../app/Filament/**/*';
+@source '../../../../resources/views/filament/**/*';
+
+.fi-sidebar {
+    border-inline-end: 0;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.98)),
+        #ffffff;
+    box-shadow: 18px 0 44px rgba(15, 23, 42, 0.08);
+}
+
+.dark .fi-sidebar {
+    background:
+        linear-gradient(180deg, rgba(15, 23, 42, 0.98), rgba(2, 6, 23, 0.98)),
+        #020617;
+    box-shadow: 18px 0 44px rgba(0, 0, 0, 0.34);
+}
+
+.fi-sidebar-header-ctn {
+    border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+    background: transparent;
+}
+
+.fi-sidebar-header {
+    min-height: 5.75rem;
+    padding-inline: 1.35rem;
+}
+
+.fi-logo {
+    color: #0f172a;
+    font-size: 1.22rem;
+    font-weight: 850;
+    letter-spacing: 0;
+}
+
+.dark .fi-logo {
+    color: #f8fafc;
+}
+
+.fi-sidebar-nav {
+    padding: 1.1rem 0.95rem 1.25rem;
+}
+
+.fi-sidebar-nav-groups {
+    gap: 1.05rem;
+}
+
+.fi-sidebar-group {
+    gap: 0.42rem;
+}
+
+.fi-sidebar-group-btn {
+    min-height: 2.35rem;
+    border-radius: 0.85rem;
+    padding: 0.18rem 0.55rem;
+    color: #64748b;
+}
+
+.fi-sidebar-group-label {
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0;
+}
+
+.fi-sidebar-group-collapse-btn {
+    display: none;
+}
+
+.fi-sidebar-group-items {
+    gap: 0.3rem;
+}
+
+.fi-sidebar-item-btn {
+    min-height: 3.15rem;
+    border-radius: 0.95rem;
+    padding-inline: 0.78rem;
+    color: #475569;
+    transition:
+        background-color 160ms ease,
+        color 160ms ease,
+        box-shadow 160ms ease,
+        transform 160ms ease;
+}
+
+.fi-sidebar-item-btn:hover {
+    background: rgba(79, 70, 229, 0.08);
+    color: #1e293b;
+    transform: translateX(2px);
+}
+
+.fi-sidebar-item.fi-active > .fi-sidebar-item-btn {
+    background:
+        linear-gradient(135deg, rgba(79, 70, 229, 0.14), rgba(20, 184, 166, 0.1)),
+        #f8fafc;
+    box-shadow: inset 0 0 0 1px rgba(79, 70, 229, 0.12), 0 12px 26px rgba(79, 70, 229, 0.12);
+    color: #1d4ed8;
+}
+
+.fi-sidebar-item-icon {
+    color: #94a3b8;
+}
+
+.fi-sidebar-item.fi-active .fi-sidebar-item-icon,
+.fi-sidebar-item-btn:hover .fi-sidebar-item-icon {
+    color: #2563eb;
+}
+
+.fi-sidebar-item-label {
+    font-size: 0.92rem;
+    font-weight: 760;
+}
+
+.fi-sidebar-footer {
+    border-top: 1px solid rgba(148, 163, 184, 0.16);
+    padding: 0.9rem 0.95rem 1rem;
+}
+
+.fi-sidebar-database-notifications-btn {
+    min-height: 3.05rem;
+    width: 100%;
+    border-radius: 0.95rem;
+    padding-inline: 0.78rem;
+    color: #475569;
+    transition:
+        background-color 160ms ease,
+        color 160ms ease,
+        box-shadow 160ms ease,
+        transform 160ms ease;
+}
+
+.fi-sidebar-database-notifications-btn:hover {
+    background: rgba(79, 70, 229, 0.08);
+    color: #1e293b;
+    transform: translateX(2px);
+}
+
+.fi-sidebar-database-notifications-btn-label {
+    font-size: 0.92rem;
+    font-weight: 760;
+}
+
+.fi-sidebar-database-notifications-btn-badge-ctn {
+    margin-inline-start: auto;
+}
+
+.dark .fi-sidebar-group-btn {
+    color: #94a3b8;
+}
+
+.dark .fi-sidebar-item-btn {
+    color: #cbd5e1;
+}
+
+.dark .fi-sidebar-database-notifications-btn {
+    color: #cbd5e1;
+}
+
+.dark .fi-sidebar-item-btn:hover {
+    background: rgba(99, 102, 241, 0.16);
+    color: #ffffff;
+}
+
+.dark .fi-sidebar-database-notifications-btn:hover {
+    background: rgba(99, 102, 241, 0.16);
+    color: #ffffff;
+}
+
+.dark .fi-sidebar-item.fi-active > .fi-sidebar-item-btn {
+    background:
+        linear-gradient(135deg, rgba(99, 102, 241, 0.28), rgba(20, 184, 166, 0.18)),
+        rgba(15, 23, 42, 0.9);
+    box-shadow: inset 0 0 0 1px rgba(129, 140, 248, 0.22), 0 16px 32px rgba(0, 0, 0, 0.22);
+    color: #dbeafe;
+}
+
+.dark .fi-sidebar-item-icon {
+    color: #94a3b8;
+}
+
+.dark .fi-sidebar-item.fi-active .fi-sidebar-item-icon,
+.dark .fi-sidebar-item-btn:hover .fi-sidebar-item-icon {
+    color: #93c5fd;
+}

@@ -34,6 +34,7 @@ class Question extends Model
         'question_text',
         'question_type',
         'is_required',
+        'show_public_analysis',
         'order_number',
     ];
 
@@ -41,6 +42,7 @@ class Question extends Model
     {
         return [
             'is_required' => 'boolean',
+            'show_public_analysis' => 'boolean',
             'order_number' => 'integer',
         ];
     }

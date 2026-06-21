@@ -1,5 +1,6 @@
 @php
     $activeQuestionnaires = $questionnaires ?? collect();
+    $publishedAnalyses = $publicAnalyses ?? collect();
     $hasActiveQuestionnaires = $activeQuestionnaires->isNotEmpty();
     $nextDeadline = $activeQuestionnaires
         ->filter(fn ($questionnaire) => filled($questionnaire->expired_at))
@@ -660,6 +661,126 @@
             line-height: 1.68;
         }
 
+        .analysis-list {
+            display: grid;
+            gap: 18px;
+            margin-top: 22px;
+        }
+
+        .analysis-group {
+            overflow: hidden;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: #ffffff;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .analysis-group-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            border-bottom: 1px solid var(--border);
+            background: linear-gradient(90deg, var(--primary-soft), #ffffff);
+            padding: 18px;
+        }
+
+        .analysis-group-head h3 {
+            margin: 0;
+            color: var(--primary-dark);
+            font-size: 1.08rem;
+        }
+
+        .analysis-group-head p {
+            margin: 5px 0 0;
+            color: var(--muted);
+            font-size: 0.85rem;
+        }
+
+        .analysis-question-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+            padding: 18px;
+        }
+
+        .analysis-question {
+            display: grid;
+            align-content: start;
+            gap: 14px;
+            border: 1px solid #e5ece6;
+            border-radius: var(--radius);
+            background: #fbfdfb;
+            padding: 16px;
+        }
+
+        .analysis-question:only-child {
+            grid-column: 1 / -1;
+        }
+
+        .analysis-question h4 {
+            margin: 0;
+            font-size: 0.96rem;
+            line-height: 1.5;
+        }
+
+        .analysis-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 7px;
+            margin-top: 8px;
+        }
+
+        .analysis-pill {
+            display: inline-flex;
+            min-height: 27px;
+            align-items: center;
+            border-radius: 999px;
+            background: var(--primary-soft);
+            color: var(--primary-dark);
+            font-size: 0.72rem;
+            font-weight: 800;
+            padding: 0 9px;
+        }
+
+        .analysis-options {
+            display: grid;
+            gap: 12px;
+        }
+
+        .analysis-option {
+            display: grid;
+            gap: 6px;
+        }
+
+        .analysis-option-head {
+            display: flex;
+            justify-content: space-between;
+            gap: 14px;
+            color: #405348;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .analysis-option-head span:last-child {
+            flex: 0 0 auto;
+            color: var(--primary-dark);
+            font-weight: 800;
+        }
+
+        .analysis-track {
+            height: 9px;
+            overflow: hidden;
+            border-radius: 999px;
+            background: #e7eee9;
+        }
+
+        .analysis-bar {
+            height: 100%;
+            border-radius: inherit;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+        }
+
         .steps-grid {
             display: grid;
             grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -911,6 +1032,7 @@
         @media (max-width: 1000px) {
             .hero,
             .questionnaire-grid,
+            .analysis-question-grid,
             .steps-grid,
             .footer-grid {
                 grid-template-columns: 1fr;
@@ -989,6 +1111,7 @@
 
             .section-heading,
             .card-footer,
+            .analysis-group-head,
             .footer-brand,
             .footer-bottom-inner {
                 align-items: stretch;
@@ -1066,6 +1189,9 @@
 
         <nav id="mobile-menu" class="nav" aria-label="Navigasi utama">
             <a href="#kuisioner-aktif">Kuisioner</a>
+            @if ($publishedAnalyses->isNotEmpty())
+                <a href="#hasil-analisis">Hasil Analisis</a>
+            @endif
             <a href="#panduan">Panduan</a>
             <a class="admin-link" href="{{ url('/admin') }}">Masuk Admin</a>
         </nav>
@@ -1190,6 +1316,69 @@
             </div>
         @endif
     </section>
+
+    @if ($publishedAnalyses->isNotEmpty())
+        <section id="hasil-analisis" class="section" aria-labelledby="analysis-title">
+            <div class="section-heading">
+                <div>
+                    <span class="section-kicker">Ringkasan respons</span>
+                    <h2 id="analysis-title">Hasil analisis jawaban</h2>
+                    <p>
+                        Hasil berikut dipublikasikan oleh admin dan dihitung otomatis dari jawaban berbentuk pilihan.
+                    </p>
+                </div>
+                <span class="section-badge">{{ $publishedAnalyses->sum(fn ($item) => count($item['questions'])) }} pertanyaan</span>
+            </div>
+
+            <div class="analysis-list">
+                @foreach ($publishedAnalyses as $publishedAnalysis)
+                    <article class="analysis-group">
+                        <div class="analysis-group-head">
+                            <div>
+                                <h3>{{ $publishedAnalysis['questionnaire']->title }}</h3>
+                                <p>Data diperbarui otomatis saat respons baru masuk.</p>
+                            </div>
+                            <span class="section-badge">{{ count($publishedAnalysis['questions']) }} analisis</span>
+                        </div>
+
+                        <div class="analysis-question-grid">
+                            @foreach ($publishedAnalysis['questions'] as $analysis)
+                                <section class="analysis-question">
+                                    <div>
+                                        <h4>{{ $analysis['question'] }}</h4>
+                                        <div class="analysis-meta">
+                                            <span class="analysis-pill">{{ $analysis['type'] }}</span>
+                                            <span class="analysis-pill">{{ $analysis['answered'] }} jawaban</span>
+                                            @if ($analysis['is_multiple'])
+                                                <span class="analysis-pill">Bisa pilih lebih dari satu</span>
+                                            @endif
+                                        </div>
+                                    </div>
+
+                                    <div class="analysis-options">
+                                        @foreach ($analysis['options'] as $option)
+                                            <div class="analysis-option">
+                                                <div class="analysis-option-head">
+                                                    <span>{{ $option['label'] }}</span>
+                                                    <span>{{ $option['count'] }} respons · {{ number_format($option['percentage'], 1, ',', '.') }}%</span>
+                                                </div>
+                                                <div class="analysis-track">
+                                                    <div
+                                                        class="analysis-bar"
+                                                        style="width: {{ min(100, $option['percentage']) }}%;"
+                                                    ></div>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </section>
+                            @endforeach
+                        </div>
+                    </article>
+                @endforeach
+            </div>
+        </section>
+    @endif
 
     <section id="panduan" class="section" aria-labelledby="guide-title">
         <div class="section-heading">

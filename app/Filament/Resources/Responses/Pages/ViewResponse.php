@@ -4,9 +4,9 @@ namespace App\Filament\Resources\Responses\Pages;
 
 use App\Exports\ResponsesExport;
 use App\Filament\Resources\Responses\ResponseResource;
-use App\Models\Answer;
 use App\Models\Question;
 use App\Models\Questionnaire;
+use App\Services\ChoiceAnalysisService;
 use Carbon\CarbonImmutable;
 use Filament\Actions\Action;
 use Filament\Resources\Pages\ViewRecord;
@@ -52,7 +52,8 @@ class ViewResponse extends ViewRecord
                         'questionnaire' => $this->getRecord()->loadMissing(['user', 'questions.options']),
                         'summary' => $this->summary(),
                         'monthlyResponses' => $this->monthlyResponses(),
-                        'choiceAnalyses' => $this->choiceAnalyses(),
+                        'choiceAnalyses' => app(ChoiceAnalysisService::class)
+                            ->forQuestionnaire($this->getRecord()),
                         'latestResponses' => $this->latestResponses(),
                     ]),
             ]);
@@ -109,56 +110,6 @@ class ViewResponse extends ViewRecord
                 ...$month,
                 'percentage' => round(($month['count'] / $max) * 100, 1),
             ])
-            ->all();
-    }
-
-    private function choiceAnalyses(): array
-    {
-        /** @var Questionnaire $questionnaire */
-        $questionnaire = $this->getRecord()->loadMissing('questions.options');
-        $responseCount = max($questionnaire->responses()->count(), 1);
-
-        return $questionnaire->questions
-            ->filter(fn (Question $question): bool => $question->usesOptions())
-            ->values()
-            ->map(function (Question $question) use ($responseCount): array {
-                $answers = Answer::query()
-                    ->where('question_id', $question->id)
-                    ->whereHas('response', fn ($query) => $query->where('questionnaire_id', $question->questionnaire_id))
-                    ->get(['answer_text', 'answer_json']);
-
-                $counts = $question->options
-                    ->pluck('option_text')
-                    ->mapWithKeys(fn (string $option): array => [$option => 0])
-                    ->all();
-
-                foreach ($answers as $answer) {
-                    $values = $answer->answer_json !== null
-                        ? $answer->answer_json
-                        : [$answer->answer_text];
-
-                    foreach (array_filter($values) as $value) {
-                        $counts[$value] = ($counts[$value] ?? 0) + 1;
-                    }
-                }
-
-                $totalAnswers = max($answers->count(), 1);
-
-                return [
-                    'question' => $question->question_text,
-                    'type' => Question::TYPES[$question->question_type] ?? $question->question_type,
-                    'answered' => $answers->count(),
-                    'options' => collect($counts)
-                        ->map(fn (int $count, string $option): array => [
-                            'label' => $option,
-                            'count' => $count,
-                            'percentage' => round(($count / $totalAnswers) * 100, 1),
-                            'respondent_percentage' => round(($count / $responseCount) * 100, 1),
-                        ])
-                        ->values()
-                        ->all(),
-                ];
-            })
             ->all();
     }
 

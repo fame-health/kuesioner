@@ -285,6 +285,23 @@
                     wire:change.stop="updateQuestionRequired({{ $record->id }}, $event.target.checked)"
                 >
             </label>
+
+            @if (auth()->user()?->isAdmin() && $record->usesOptions())
+                <label class="question-card-toggle wide">
+                    <span>
+                        Tampilkan analisis di landing page
+                        <small style="display: block; margin-top: 2px; color: #6b7280; font-size: 11px; font-weight: 600;">
+                            Publikasikan jumlah dan persentase tiap pilihan.
+                        </small>
+                    </span>
+                    <input
+                        type="checkbox"
+                        value="1"
+                        @checked($record->show_public_analysis)
+                        wire:change.stop="updateQuestionPublicAnalysis({{ $record->id }}, $event.target.checked)"
+                    >
+                </label>
+            @endif
         </div>
     </div>
 

@@ -5,12 +5,12 @@ namespace App\Filament\Resources\Questionnaires\RelationManagers;
 use App\Models\Question;
 use App\Models\QuestionOption;
 use Filament\Actions\CreateAction;
-use Filament\Notifications\Notification;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
@@ -48,6 +48,22 @@ class QuestionsRelationManager extends RelationManager
                 Toggle::make('is_required')
                     ->label('Wajib diisi')
                     ->default(false),
+                Toggle::make('show_public_analysis')
+                    ->label('Tampilkan analisis di landing page')
+                    ->helperText('Hanya tersedia untuk pertanyaan berbentuk pilihan.')
+                    ->default(false)
+                    ->visible(fn (Get $get): bool => (auth()->user()?->isAdmin() ?? false)
+                        && in_array($get('question_type'), [
+                            Question::TYPE_RADIO,
+                            Question::TYPE_CHECKBOX,
+                            Question::TYPE_DROPDOWN,
+                        ], true))
+                    ->dehydrated(fn (Get $get): bool => (auth()->user()?->isAdmin() ?? false)
+                        && in_array($get('question_type'), [
+                            Question::TYPE_RADIO,
+                            Question::TYPE_CHECKBOX,
+                            Question::TYPE_DROPDOWN,
+                        ], true)),
                 Repeater::make('options')
                     ->label('Pilihan jawaban')
                     ->relationship()
@@ -124,6 +140,13 @@ class QuestionsRelationManager extends RelationManager
 
         $question->update([
             'question_type' => $questionType,
+            'show_public_analysis' => in_array($questionType, [
+                Question::TYPE_RADIO,
+                Question::TYPE_CHECKBOX,
+                Question::TYPE_DROPDOWN,
+            ], true)
+                ? $question->show_public_analysis
+                : false,
         ]);
 
         if ($question->fresh()->usesOptions() && $question->options()->doesntExist()) {
@@ -144,6 +167,30 @@ class QuestionsRelationManager extends RelationManager
         $question->update([
             'is_required' => filter_var($isRequired, FILTER_VALIDATE_BOOL),
         ]);
+    }
+
+    public function updateQuestionPublicAnalysis(int $questionId, mixed $showPublicAnalysis): void
+    {
+        if (! auth()->user()?->isAdmin()) {
+            return;
+        }
+
+        $question = $this->findOwnedQuestion($questionId);
+
+        if (! $question?->usesOptions()) {
+            return;
+        }
+
+        $question->update([
+            'show_public_analysis' => filter_var($showPublicAnalysis, FILTER_VALIDATE_BOOL),
+        ]);
+
+        Notification::make()
+            ->title($question->show_public_analysis
+                ? 'Analisis ditampilkan di landing page'
+                : 'Analisis disembunyikan dari landing page')
+            ->success()
+            ->send();
     }
 
     public function updateQuestionOrder(int $questionId, mixed $orderNumber): void
@@ -270,7 +317,6 @@ class QuestionsRelationManager extends RelationManager
             ->first();
     }
 
-
     private function duplicateQuestion(Question $record): null
     {
         $record->loadMissing('options');
@@ -280,6 +326,7 @@ class QuestionsRelationManager extends RelationManager
                 'question_text' => "{$record->question_text} (Salinan)",
                 'question_type' => $record->question_type,
                 'is_required' => $record->is_required,
+                'show_public_analysis' => $record->show_public_analysis,
                 'order_number' => ((int) $this->getOwnerRecord()->questions()->max('order_number')) + 1,
             ]);
 
